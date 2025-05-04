@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib" // Using pgx/v5/stdlib because we're using pgx driver through database sql
-	"letsgosaka.kailmendoza.com/internal/models"
+	"jobscraper.kailmendoza.com/internal/models"
 	"log/slog"
 	"net/http"
 	"os"
@@ -44,7 +44,7 @@ func main() {
 			DB: db,
 		},
 	}
-	
+
 	/* Initialize Router (mux) */
 	mux := app.routes()
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
-	"letsgosaka.kailmendoza.com/internal/models"
+	"jobscraper.kailmendoza.com/internal/models"
 	"net/http"
 	"strconv"
 )
