@@ -44,3 +44,4 @@ coverage.out
 
 # Environment files
 .env
+node_modules/
