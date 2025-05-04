@@ -18,8 +18,8 @@ type application struct {
 
 func main() {
 	/* Flags (Configuration) */
-	addr := flag.String("addr", "167.172.69.133", "HTTP network address")
-	dsn := flag.String("dsn", "postgres://web:Soul2001@167.172.69.133/letsgosaka", "postgres data source name")
+	addr := flag.String("addr", "167.172.69.133:4000", "HTTP network address")
+	dsn := flag.String("dsn", "postgres://web:Soul2001@167.172.69.133:4000/letsgosaka", "postgres data source name")
 	flag.Parse()
 
 	/* Initialize Dependencies */
