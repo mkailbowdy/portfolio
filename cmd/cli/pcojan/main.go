@@ -26,5 +26,5 @@ func main() {
 			break
 		}
 	}
-	os.WriteFile("gen7_jan_code.txt", janCodes, 0644)
+	os.WriteFile("gen7.txt", janCodes, 0644)
 }
