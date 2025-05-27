@@ -38,37 +38,19 @@ func main() {
 		})
 	})
 
-	getDetails(c, "h1.b-product-info__title", products)
-	getDetails(c, "span.c-price__main", products)
-	getDetails(c, "p.b-product-info__note", products)
-	getDetails(c, "p[name]", products)
-
-	//c.OnHTML("h1.b-product-info__title", func(e *colly.HTMLElement) {
-	//	title := e.DOM.Text()
-	//	fmt.Printf("Title: %s\n", title)
-	//})
-
-	//c.OnHTML("span.c-price__main", func(e *colly.HTMLElement) {
-	//	price := e.DOM.Text()
-	//	fmt.Printf("price: %s\n", price)
-	//})
-	//c.OnHTML("p.b-product-info__note", func(e *colly.HTMLElement) {
-	//	deliveryDate := e.DOM.Text()
-	//	fmt.Printf("Delivery Date: %s\n", deliveryDate)
-	//})
-	//c.OnHTML("p[name]", func(e *colly.HTMLElement) {
-	//	description := e.DOM.Text()
-	//	description = strings.Split(description, ".")[0]
-	//	fmt.Printf("Description: %s\n", description)
-	//})
+	getDetails(c, "h1.b-product-info__title", &products)
+	getDetails(c, "span.c-price__main", &products)
+	getDetails(c, "p.b-product-info__note", &products)
+	getDetails(c, "p[name]", &products)
 
 	c.OnHTML("div#specification", func(e *colly.HTMLElement) {
 		e.ForEach("dl.b-outline-table__detail", func(_ int, dl *colly.HTMLElement) {
 			term := dl.ChildText("dt h3")
 			if term == "仕様" || term == "Specifications" {
 				specText := dl.ChildText("dd p")
+				products = append(products, []byte(specText+"\n"+"============================================\n\n")...)
 				fmt.Printf("Specification:%s\n\n\n", specText)
-				fmt.Print("============================================\n\n")
+				fmt.Print("============================================")
 			}
 		})
 	})
@@ -77,10 +59,10 @@ func main() {
 	os.WriteFile("goodsmile.txt", products, 0644)
 }
 
-func getDetails(c *colly.Collector, goquerySelector string, product []byte) {
+func getDetails(c *colly.Collector, goquerySelector string, product *[]byte) {
 	c.OnHTML(goquerySelector, func(e *colly.HTMLElement) {
 		detail := e.DOM.Text()
 		fmt.Printf("%s\n", detail)
-		product = append(product, detail...)
+		*product = append(*product, []byte(detail+"\n")...)
 	})
 }
