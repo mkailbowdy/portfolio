@@ -4,37 +4,83 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gocolly/colly"
+	"os"
 )
 
 func main() {
-	// Flag Configurations
-	path := flag.String("path", "en/product", "The path to the product")
+	/* Flags */
+	lang := flag.String("lang", "en", "the language to use")
+	count := flag.Int("count", 2, "the number of items to create")
 	flag.Parse()
 	// Instantiate default collector
+	var products []byte
+
 	c := colly.NewCollector(
 		// Visit only domains: hackerspaces.org, wiki.hackerspaces.org
 		colly.AllowedDomains("www.goodsmile.com"),
 	)
 
-	c.OnHTML("div.b-product-info__header", func(e *colly.HTMLElement) {
-		name := e.ChildText("h1")
-		fmt.Printf("%s\n============\n", name)
-	})
-
-	c.OnHTML("section.p-product__section", func(e *colly.HTMLElement) {
-		desc := e.ChildText("p[name=description]")
-		if desc != "" {
-			fmt.Printf("%s\n============\n", desc)
+	var ranOnce bool
+	c.OnHTML("div.c-top-product-list__unit", func(e *colly.HTMLElement) {
+		if ranOnce {
+			return
 		}
+		ranOnce = true
+
+		e.ForEachWithBreak("a.c-top-product-list__item[href]", func(i int, h *colly.HTMLElement) bool {
+			fmt.Println(i, *count)
+			if i >= *count {
+				return false
+			}
+			link := h.Attr("href")
+			c.Visit(h.Request.AbsoluteURL(link))
+			return true
+		})
 	})
 
-	c.OnHTML("div#specification dl dd", func(e *colly.HTMLElement) {
-		spec := e.ChildText("p")
-		if spec != "" {
-			fmt.Printf("%s\n\n", spec)
-		}
+	getDetails(c, "h1.b-product-info__title", products)
+	getDetails(c, "span.c-price__main", products)
+	getDetails(c, "p.b-product-info__note", products)
+	getDetails(c, "p[name]", products)
+
+	//c.OnHTML("h1.b-product-info__title", func(e *colly.HTMLElement) {
+	//	title := e.DOM.Text()
+	//	fmt.Printf("Title: %s\n", title)
+	//})
+
+	//c.OnHTML("span.c-price__main", func(e *colly.HTMLElement) {
+	//	price := e.DOM.Text()
+	//	fmt.Printf("price: %s\n", price)
+	//})
+	//c.OnHTML("p.b-product-info__note", func(e *colly.HTMLElement) {
+	//	deliveryDate := e.DOM.Text()
+	//	fmt.Printf("Delivery Date: %s\n", deliveryDate)
+	//})
+	//c.OnHTML("p[name]", func(e *colly.HTMLElement) {
+	//	description := e.DOM.Text()
+	//	description = strings.Split(description, ".")[0]
+	//	fmt.Printf("Description: %s\n", description)
+	//})
+
+	c.OnHTML("div#specification", func(e *colly.HTMLElement) {
+		e.ForEach("dl.b-outline-table__detail", func(_ int, dl *colly.HTMLElement) {
+			term := dl.ChildText("dt h3")
+			if term == "仕様" || term == "Specifications" {
+				specText := dl.ChildText("dd p")
+				fmt.Printf("Specification:%s\n\n\n", specText)
+				fmt.Print("============================================\n\n")
+			}
+		})
 	})
 
-	// Start scraping on https://hackerspaces.org
-	c.Visit("https://www.goodsmile.com/" + *path)
+	c.Visit("https://www.goodsmile.com/" + *lang)
+	os.WriteFile("goodsmile.txt", products, 0644)
+}
+
+func getDetails(c *colly.Collector, goquerySelector string, product []byte) {
+	c.OnHTML(goquerySelector, func(e *colly.HTMLElement) {
+		detail := e.DOM.Text()
+		fmt.Printf("%s\n", detail)
+		product = append(product, detail...)
+	})
 }
